@@ -147,7 +147,13 @@ $("ai_go").onclick=async()=>{
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({interest:intro,picks})
     });
-    const data=await res.json();
+    const raw=await res.text();
+    let data;
+    try {
+      data=JSON.parse(raw);
+    } catch {
+      throw new Error("GPT 서버에 연결되지 않았어요. 현재 사이트가 정적 페이지로 실행 중이거나 서버 주소가 연결되지 않았을 수 있어요. Node.js 서버를 배포한 주소에서 접속해 주세요.");
+    }
     if(!res.ok) throw new Error(data.error||"추천을 불러오지 못했어요.");
     const T=data.topics||[];
     $("ai_out").innerHTML=T.map(t=>'<div class="t"><b>'+e(t.title||"")+'</b><span class="f">'+e(t.why||"")+'</span><ul><li>방법: '+e(t.method||"")+'</li><li>책: '+e(t.book||"")+'</li><li>데이터: '+e(t.data||"")+'</li><li>생기부 포인트: '+e(t.seteuk||"")+'</li></ul></div>').join("")||"<p class='src'>추천 결과가 비어 있어요. 내용을 조금 더 구체적으로 입력해 다시 시도해 주세요.</p>";
