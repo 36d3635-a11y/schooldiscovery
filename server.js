@@ -1,12 +1,15 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = process.env.OPENAI_MODEL || "gpt-5.5";
+const MODEL = process.env.OPENAI_MODEL || "gpt-6-astra";
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(express.json({ limit: "20kb" }));
-app.use(express.static("public"));
+app.get("/", (_req, res) => res.sendFile(path.join(ROOT, "index.html")));
 
 app.post("/api/recommend", async (req, res) => {
   if (!OPENAI_API_KEY) {
