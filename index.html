@@ -75,7 +75,7 @@ button.a.pr{background:#e8590c;color:#fff}
 <textarea id="plan" placeholder="주제를 담으면 여기에 모입니다. 직접 수정도 가능해요."></textarea>
 <button class="a" id="cp">복사하기</button> <button class="a" id="clr">모두 비우기</button> <button class="a pr" id="go">✨ 최종 탐구 주제 추천받기</button> <span class="src" id="msg"></span>
 <div class="rec" id="rec"></div>
-<div id="aibox" style="display:none"><h3>🤖 AI 맞춤 주제 추천</h3><p class="src">담은 주제와 입력한 관심사를 GPT가 분석해 나만의 탐구 주제를 제안합니다. (GPT API를 사용하며, 이용 시 API 사용료가 발생할 수 있습니다.)</p><input id="ai_in" placeholder="관심사·희망 전공어·고민 (예: 중국어 전공, 환경과 도시에 관심, 데이터 분석 경험 없음)"><button class="a pr" id="ai_go">AI에게 추천받기</button> <span class="src" id="ai_st"></span><div class="rec" id="ai_out"></div></div></div>
+</div></div>
 <p class="note">전공명·계열·유사학과는 커리어넷 오픈API(MAJOR) 전체 학과 501건을 기반으로 합니다. 인재상 키워드·추천 도서·공공데이터·주제 예시는 탐구 설계를 돕는 참고용 제안이며, 실제 인재상과 모집단위는 지원 대학 입학처에서 반드시 확인하세요. 이 페이지는 API를 실시간 호출하지 않는 2026-11 기준 스냅샷입니다. 큐레이션은 전공 유형별 공통 내용입니다.</p>
 </div>
 <script>
@@ -133,35 +133,5 @@ R.push(["실천·제안형",z.t+" 결과를 바탕으로 한 개선 제안서(�
 $("rec").innerHTML="<h3>✨ 담은 "+K.length+"개 주제를 바탕으로 한 최종 추천</h3>"+R.map(r=>'<div class="t"><span class="tag">'+r[0]+'</span><b>'+e(r[1])+'</b><span class="f">'+e(r[2])+'</span></div>').join("")+"<h3>🗓 4주 탐구 로드맵</h3><ol><li>1주: 책 읽기와 탐구 질문 3개 세우기</li><li>2주: 공공데이터 내려받기, 정리하기</li><li>3주: 분석·시각화, 결과 해석</li><li>4주: 보고서 작성, 발표, 후속 탐구 정리</li></ol><h3>📌 생기부 기록 포인트</h3><ul><li>동기: 어떤 독서·경험에서 질문이 생겼는지</li><li>과정: 어떤 데이터를 어떻게 분석했는지(직접 한 부분 중심)</li><li>결과와 성찰: 알게 된 점, 한계, 후속 탐구 계획</li></ul><p class=\"src\">추천은 담은 주제의 전공·책·데이터를 조합한 초안입니다. 실제 주제는 담당 선생님과 상의해 구체화하세요.</p>";
 $("rec").scrollIntoView({behavior:"smooth",block:"nearest"});}
 $("go").onclick=rec;
-// GPT 맞춤 추천은 서버의 /api/recommend를 통해 실행합니다.
-$("ai_go").onclick=async()=>{
-  const st=$("ai_st");
-  const intro=$("ai_in").value.trim();
-  if(!K.length&&!intro){st.textContent="주제를 담거나 관심사를 입력해 주세요.";return;}
-  const picks=K.map(([i,k])=>{const m=M[i],p=P[m[2]];return{전공:m[1],주제:p.tp[k][0],방법:p.tp[k][1],책:p.bk,데이터:p.dt,인재상:p.ta};});
-  st.textContent="GPT가 탐구 주제를 분석하고 있어요…";
-  $("ai_go").disabled=true;
-  try{
-    const res=await fetch("/api/recommend",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({interest:intro,picks})
-    });
-    const raw=await res.text();
-    let data;
-    try {
-      data=JSON.parse(raw);
-    } catch {
-      throw new Error("GPT 서버에 연결되지 않았어요. 현재 사이트가 정적 페이지로 실행 중이거나 서버 주소가 연결되지 않았을 수 있어요. Node.js 서버를 배포한 주소에서 접속해 주세요.");
-    }
-    if(!res.ok) throw new Error(data.error||"추천을 불러오지 못했어요.");
-    const T=data.topics||[];
-    $("ai_out").innerHTML=T.map(t=>'<div class="t"><b>'+e(t.title||"")+'</b><span class="f">'+e(t.why||"")+'</span><ul><li>방법: '+e(t.method||"")+'</li><li>책: '+e(t.book||"")+'</li><li>데이터: '+e(t.data||"")+'</li><li>생기부 포인트: '+e(t.seteuk||"")+'</li></ul></div>').join("")||"<p class='src'>추천 결과가 비어 있어요. 내용을 조금 더 구체적으로 입력해 다시 시도해 주세요.</p>";
-    st.textContent="추천 완료 · 책과 데이터의 실제 존재 여부 및 최신성은 직접 확인해 주세요.";
-  }catch(err){
-    st.textContent=err.message||"오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
-  }finally{$("ai_go").disabled=false;}
-};
-$("aibox").style.display="block";
 all();
 </script></body></html>
